@@ -32,6 +32,7 @@ class MerchantStatusChanged extends Notification implements ShouldQueue
             MerchantStatus::Rejected => __('Update on your :app application', ['app' => config('app.name')]),
             MerchantStatus::Suspended => __('Payments for :merchant are paused', ['merchant' => $this->merchant->name]),
             MerchantStatus::Pending => __('Your account is under review'),
+            MerchantStatus::Banned => __(':merchant is closed on :app', ['merchant' => $this->merchant->name, 'app' => config('app.name')]),
         });
 
         $message = match ($this->status) {
@@ -43,6 +44,8 @@ class MerchantStatusChanged extends Notification implements ShouldQueue
             MerchantStatus::Suspended => $message
                 ->line(__('We paused payments for :merchant. Live keys were revoked.', ['merchant' => $this->merchant->name])),
             MerchantStatus::Pending => $message,
+            MerchantStatus::Banned => $message
+                ->line(__('We closed :merchant. Payments, API keys and the dashboard are no longer available.', ['merchant' => $this->merchant->name])),
         };
 
         if ($this->reason !== null && $this->reason !== '') {

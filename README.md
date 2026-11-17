@@ -498,7 +498,7 @@ $valid = ctype_digit($timestamp)
 
 | الجزء | الأمر | الحالة الحالية |
 |---|---|---|
-| البوابة | `cd gateway && php artisan test --compact` | 287 اختبارًا ناجحًا (914 تحققًا) |
+| البوابة | `cd gateway && php artisan test --compact` | 292 اختبارًا ناجحًا (919 تحققًا) |
 | البوابة | `vendor/bin/phpstan analyse` و`vendor/bin/pint --test` | Larastan المستوى 7 وتنسيق Pint |
 | المتجر | `cd store-web && php artisan test --compact` | 21 اختبارًا ناجحًا |
 | التطبيق | `cd store-mobile && flutter analyze && flutter test` | تحليل صارم واختبارات وحدات وواجهات ومقارنة صور |
@@ -962,7 +962,7 @@ The payment page, API, settlements, subscriptions and webhooks keep working unch
 
 | Part | Command | Current status |
 |---|---|---|
-| Gateway | `cd gateway && php artisan test --compact` | 287 tests passing (914 assertions) |
+| Gateway | `cd gateway && php artisan test --compact` | 292 tests passing (919 assertions) |
 | Gateway | `vendor/bin/phpstan analyse`, `vendor/bin/pint --test` | Larastan level 7, Pint formatting |
 | Store | `cd store-web && php artisan test --compact` | 21 tests passing |
 | App | `cd store-mobile && flutter analyze && flutter test` | Strict analysis, unit, widget and golden tests |

@@ -1153,5 +1153,7 @@
     "you": "أنت",
     "{1} every month|{2} every 2 months|[3,*] every :count months": "كل :count شهر|كل شهر|كل شهرين|كل :count أشهر|كل :count شهرًا|كل :count شهر",
     "{1} every week|{2} every 2 weeks|[3,*] every :count weeks": "كل :count أسبوع|كل أسبوع|كل أسبوعين|كل :count أسابيع|كل :count أسبوعًا|كل :count أسبوع",
-    "{1} every year|{2} every 2 years|[3,*] every :count years": "كل :count سنة|كل سنة|كل سنتين|كل :count سنوات|كل :count سنةً|كل :count سنة"
+    "{1} every year|{2} every 2 years|[3,*] every :count years": "كل :count سنة|كل سنة|كل سنتين|كل :count سنوات|كل :count سنةً|كل :count سنة",
+    ":merchant is closed on :app": "أُغلق حساب :merchant على :app",
+    "We closed :merchant. Payments, API keys and the dashboard are no longer available.": "أغلقنا حساب :merchant. لم تعد المدفوعات ومفاتيح API ولوحة التحكم متاحة."
 }

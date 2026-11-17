@@ -40,6 +40,17 @@ test('owners and admins are emailed when the merchant is suspended, viewers are 
     Notification::assertNotSentTo($viewer, MerchantStatusChanged::class);
 });
 
+test('the status email renders for every merchant status', function (MerchantStatus $status) {
+    $merchant = Merchant::factory()->create(['name' => 'Nile Aroma']);
+
+    $html = (new MerchantStatusChanged($merchant, $status, 'Selling counterfeit goods'))
+        ->toMail(User::factory()->create())
+        ->render()
+        ->toHtml();
+
+    expect($html)->toContain('Selling counterfeit goods');
+})->with(MerchantStatus::cases());
+
 test('a rejected document notifies the merchant with the reason', function () {
     $owner = User::factory()->create();
     $merchant = Merchant::factory()->pending()->withMember($owner, MerchantRole::Owner)->create();
