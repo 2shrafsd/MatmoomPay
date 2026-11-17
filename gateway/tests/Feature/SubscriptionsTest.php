@@ -3,6 +3,7 @@
 use App\Actions\Subscriptions\RecordInvoiceOutcome;
 use App\Actions\Subscriptions\RenewSubscription;
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionStatus;
 use App\Jobs\RenewSubscriptionJob;
 use App\Models\ApiKey;
@@ -12,6 +13,7 @@ use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Models\SubscriptionInvoice;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookEndpoint;
 use Database\Factories\ApiKeyFactory;
@@ -146,6 +148,34 @@ test('a renewal that needs 3-D Secure waits with a next action link', function (
 
     expect($invoice->refresh()->status)->toBe(InvoiceStatus::Paid)
         ->and($subscription->refresh()->status)->toBe(SubscriptionStatus::Active);
+});
+
+test('the final failed renewal cancels its 3-D Secure intent so the cancelled subscription cannot be charged', function () {
+    $subscription = dueSubscription($this, '4456530000001096');
+    SubscriptionInvoice::create([
+        'merchant_id' => $subscription->merchant_id,
+        'livemode' => false,
+        'subscription_id' => $subscription->id,
+        'amount_due' => 15_000,
+        'currency' => $this->plan->currency,
+        'status' => InvoiceStatus::Open,
+        'attempt_count' => RecordInvoiceOutcome::MAX_ATTEMPTS - 1,
+        'next_payment_attempt' => now()->subMinute(),
+        'period_start' => $subscription->current_period_end,
+        'period_end' => $subscription->current_period_end->addMonth(),
+    ]);
+
+    app(RenewSubscription::class)->handle($subscription);
+
+    $invoice = $subscription->invoices()->with('paymentIntent')->sole();
+    expect($subscription->refresh()->status)->toBe(SubscriptionStatus::Cancelled)
+        ->and($invoice->status)->toBe(InvoiceStatus::Void)
+        ->and($invoice->paymentIntent->status->value)->toBe('cancelled')
+        ->and(Payment::sole()->status)->toBe(PaymentStatus::Failed);
+
+    $this->post(URL::temporarySignedRoute('authenticate.submit', now()->addMinutes(5), ['payment' => Payment::sole()->public_id]), ['code' => '1234']);
+
+    expect(Payment::sole()->status)->toBe(PaymentStatus::Failed);
 });
 
 test('cancel at period end stops the next renewal', function () {

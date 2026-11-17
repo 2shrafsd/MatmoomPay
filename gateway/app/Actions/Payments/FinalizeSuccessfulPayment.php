@@ -139,6 +139,13 @@ final readonly class FinalizeSuccessfulPayment
             if ($intent !== null && in_array($intent->status, [PaymentIntentStatus::Succeeded, PaymentIntentStatus::Cancelled], true)) {
                 return false;
             }
+
+            // A renewal whose invoice was voided (subscription cancelled) cannot be applied; it is refunded instead.
+            $invoice = SubscriptionInvoice::query()->where('payment_intent_id', $payment->payment_intent_id)->lockForUpdate()->first();
+
+            if ($invoice !== null && $invoice->status !== InvoiceStatus::Open) {
+                return false;
+            }
         }
 
         return true;
@@ -152,6 +159,10 @@ final readonly class FinalizeSuccessfulPayment
         $email = $session->metadata['Customer email'] ?? null;
 
         if ($session->payment_link_id === null || ! is_string($email) || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            return;
+        }
+
+        if (! $payment->livemode && ! $payment->merchant->isTeamEmail($email)) {
             return;
         }
 

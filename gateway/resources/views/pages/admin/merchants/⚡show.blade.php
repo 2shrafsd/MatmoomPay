@@ -87,15 +87,17 @@ new #[Layout('layouts::admin'), Title('Merchant review')] class extends Componen
         Flux::toast(variant: 'success', text: __('Pricing updated. It applies to new payments only.'));
     }
 
-    public function verifySettlementAccount(UpdateMerchantProfile $updateMerchantProfile): void
+    public function verifySettlementAccount(UpdateMerchantProfile $updateMerchantProfile, string $reviewedFingerprint = ''): void
     {
         try {
-            $updateMerchantProfile->verifySettlementAccount($this->merchant, Auth::user());
+            $updateMerchantProfile->verifySettlementAccount($this->merchant, Auth::user(), $reviewedFingerprint);
         } catch (GatewayException $exception) {
             Flux::toast(variant: 'danger', text: $exception->getMessage());
 
             return;
         }
+
+        $this->merchant->refresh();
 
         Flux::toast(variant: 'success', text: __('Settlement account verified. Payouts can go to it now.'));
     }
@@ -333,7 +335,7 @@ new #[Layout('layouts::admin'), Title('Merchant review')] class extends Componen
                             <flux:badge size="sm" color="green">{{ __('Verified') }}</flux:badge>
                         @else
                             <flux:badge size="sm" color="amber">{{ __('Needs verification') }}</flux:badge>
-                            <flux:button size="xs" x-on:click="$dispatch('confirm-action', { message: {{ \Illuminate\Support\Js::from(__('Confirm you checked this account belongs to :name?', ['name' => $merchant->legal_name])) }}, danger: false, run: () => $wire.verifySettlementAccount() })" data-test="verify-settlement-account">{{ __('Verify') }}</flux:button>
+                            <flux:button size="xs" x-on:click="$dispatch('confirm-action', { message: {{ \Illuminate\Support\Js::from(__('Confirm you checked this account belongs to :name?', ['name' => $merchant->legal_name])) }}, danger: false, run: () => $wire.verifySettlementAccount({{ \Illuminate\Support\Js::from($merchant->settlementAccountFingerprint()) }}) })" data-test="verify-settlement-account">{{ __('Verify') }}</flux:button>
                         @endif
                     @endif
                 </dd>

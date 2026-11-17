@@ -17,6 +17,15 @@ new #[Title('Transaction')] class extends PortalComponent {
 
     public string $refundReason = '';
 
+    /**
+     * Livewire snapshots outlive the page, so the record is re-authorized on every update, not only at mount.
+     */
+    public function hydrate(): void
+    {
+        $this->authorize('view', $this->payment);
+        $this->ensureInAccount($this->payment);
+    }
+
     public function mount(Payment $payment): void
     {
         $this->authorize('view', $payment);

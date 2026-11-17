@@ -37,6 +37,13 @@ final readonly class AcceptTeamInvitation
                 return null;
             }
 
+            // The sender must still be able to manage this team when the invitation is used.
+            $inviter = $invitation->invited_by === null ? null : User::query()->find($invitation->invited_by);
+
+            if ($inviter === null || ! $inviter->roleIn($merchant)?->canManageTeam()) {
+                return null;
+            }
+
             // Joining never changes the role of someone who is already a member.
             if ($user->roleIn($merchant) === null) {
                 $merchant->users()->attach($user->id, ['role' => $invitation->role->value]);

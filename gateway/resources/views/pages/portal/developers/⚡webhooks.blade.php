@@ -11,6 +11,7 @@ use App\Support\OutboundUrlGuard;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\WithPagination;
@@ -71,6 +72,10 @@ new #[Title('Webhooks')] class extends PortalComponent {
     {
         $this->authorize('manageDevelopers', $this->merchant());
 
+        if (! $this->withinWebhookBudget('webhook-test:'.$this->merchant()->id, 5)) {
+            return;
+        }
+
         $delivery = $queueWebhook->handle($this->merchant(), $this->livemode(), WebhookEvent::WebhookTest, [
             'message' => 'This is a test event from '.config('app.name').'. Answer with any 2xx status.',
             'merchant_id' => $this->merchant()->public_id,
@@ -97,8 +102,26 @@ new #[Title('Webhooks')] class extends PortalComponent {
         $delivery = WebhookDelivery::query()->forAccount($this->merchant(), $this->livemode())->where('public_id', $deliveryId)->firstOrFail();
         $this->authorize('resend', $delivery);
 
+        if (! $this->withinWebhookBudget('webhook-resend:'.$this->merchant()->id, 20)) {
+            return;
+        }
+
         $resendWebhookDelivery->handle($delivery);
         Flux::toast(text: __('The event was queued for delivery.'));
+    }
+
+    /**
+     * Test and resend jobs share the queue with payment-safety jobs, so each merchant gets a small per-minute budget.
+     */
+    private function withinWebhookBudget(string $key, int $perMinute): bool
+    {
+        if (RateLimiter::attempt($key, $perMinute, fn () => true, 60)) {
+            return true;
+        }
+
+        Flux::toast(variant: 'warning', text: __('You tried this too many times in a short while. Wait a minute, then try again.'));
+
+        return false;
     }
 
     public function viewPayload(string $deliveryId): void

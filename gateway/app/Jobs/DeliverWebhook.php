@@ -10,6 +10,7 @@ use App\Enums\TeamNotification;
 use App\Enums\WebhookDeliveryStatus;
 use App\Models\WebhookDelivery;
 use App\Notifications\WebhookEndpointFailing;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\DeleteWhenMissingModels;
@@ -18,9 +19,12 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Delivers one webhook with exponential back-off between attempts (about a day in total).
+ *
+ * Unique per delivery: while one retry chain is alive (including its back-off waits), resends and the stuck-delivery
+ * sweeper cannot start a second chain, so a backlog is never multiplied.
  */
 #[DeleteWhenMissingModels]
-class DeliverWebhook implements ShouldQueue
+class DeliverWebhook implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
@@ -36,7 +40,17 @@ class DeliverWebhook implements ShouldQueue
      */
     public int $timeout = 30;
 
+    /**
+     * Longer than the whole back-off schedule, so the lock outlives a live chain but frees a lost one within a day.
+     */
+    public int $uniqueFor = 86400;
+
     public function __construct(public WebhookDelivery $delivery) {}
+
+    public function uniqueId(): string
+    {
+        return $this->delivery->public_id;
+    }
 
     public function tries(): int
     {

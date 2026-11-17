@@ -1,7 +1,12 @@
 <?php
 
+use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Enums\TeamNotification;
+use App\Notifications\EmailAddressChanged;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -12,10 +17,11 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Layout('layouts::panel'), Title('Profile settings')] class extends Component {
-    use ProfileValidationRules;
+    use PasswordValidationRules, ProfileValidationRules;
 
     public string $name = '';
     public string $email = '';
+    public string $current_password = '';
 
     /**
      * @var array<string, bool>
@@ -58,7 +64,23 @@ new #[Layout('layouts::panel'), Title('Profile settings')] class extends Compone
     {
         $user = Auth::user();
 
-        $validated = $this->validate($this->profileRules($user->id));
+        $rules = $this->profileRules($user->id);
+        $changesEmail = Str::lower(trim($this->email)) !== Str::lower($user->email);
+
+        // The email is the password-recovery channel, so changing it needs the current password.
+        if ($changesEmail) {
+            $rules['current_password'] = $this->currentPasswordRules();
+        }
+
+        try {
+            $validated = $this->validate($rules);
+        } finally {
+            $this->reset('current_password');
+        }
+
+        unset($validated['current_password']);
+
+        $previousEmail = $user->email;
 
         $user->fill($validated);
 
@@ -67,6 +89,10 @@ new #[Layout('layouts::panel'), Title('Profile settings')] class extends Compone
         }
 
         $user->save();
+
+        if ($user->wasChanged('email')) {
+            Notification::route('mail', $previousEmail)->notify(new EmailAddressChanged($user->email));
+        }
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
@@ -80,6 +106,16 @@ new #[Layout('layouts::panel'), Title('Profile settings')] class extends Compone
 
         if ($user->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('dashboard', absolute: false));
+
+            return;
+        }
+
+        // Same budget as Fortify's verification route, plus a per-address cap so one account cannot flood an inbox.
+        $sent = RateLimiter::attempt('verification-mail:'.$user->id, 6, fn () => true, 60)
+            && RateLimiter::attempt('verification-mail-to:'.sha1(Str::lower($user->email)), 10, fn () => true, 3600);
+
+        if (! $sent) {
+            Flux::toast(variant: 'danger', text: __('Too many verification emails. Please wait a while and try again.'));
 
             return;
         }
@@ -133,6 +169,15 @@ new #[Layout('layouts::panel'), Title('Profile settings')] class extends Compone
                     </div>
                 @endif
             </div>
+
+            <flux:input
+                wire:model="current_password"
+                :label="__('Current password')"
+                :description="__('Required only when you change your email address.')"
+                type="password"
+                autocomplete="current-password"
+                viewable
+            />
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">

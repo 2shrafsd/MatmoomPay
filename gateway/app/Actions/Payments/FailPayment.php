@@ -20,9 +20,18 @@ final readonly class FailPayment
     public function handle(Payment $payment, string $reason): Payment
     {
         return DB::transaction(function () use ($payment, $reason): Payment {
+            // Callers often hold a copy read without a lock; re-read so a payment another path just captured is never
+            // failed. Unsaved changes the caller made (bank reference, attempt count) are carried over.
+            $caller = $payment;
+            $payment = Payment::query()->whereKey($caller->id)->lockForUpdate()->firstOrFail();
+
             if ($payment->status !== PaymentStatus::InProcess) {
+                $caller->setRawAttributes($payment->getAttributes(), sync: true);
+
                 return $payment;
             }
+
+            $payment->forceFill(collect($caller->getDirty())->except('status')->all());
 
             $payment->fill([
                 'status' => PaymentStatus::Failed,
@@ -30,6 +39,8 @@ final readonly class FailPayment
                 'card_token' => null,
                 'completed_at' => now(),
             ])->save();
+
+            $caller->setRawAttributes($payment->getAttributes(), sync: true);
 
             if ($payment->payment_intent_id !== null) {
                 PaymentIntent::query()

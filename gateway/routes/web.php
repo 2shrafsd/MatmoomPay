@@ -88,9 +88,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::livewire('settlements', 'pages::portal.settlements.index')->name('portal.settlements');
         Route::livewire('settlements/{settlement}', 'pages::portal.settlements.show')->name('portal.settlements.show');
         Route::get('settlements/{settlement}/export', ExportSettlementController::class)->middleware('throttle:exports')->name('portal.settlements.export');
-        Route::livewire('team', 'pages::portal.team')->name('portal.team');
-
         Route::middleware('password.confirm')->group(function () {
+            // Team grants Admin and Developer roles, which reach the keys and bank pages, so it needs the same step-up.
+            Route::livewire('team', 'pages::portal.team')->name('portal.team');
             Route::livewire('developers', 'pages::portal.developers.keys')->name('portal.developers');
             Route::livewire('developers/webhooks', 'pages::portal.developers.webhooks')->name('portal.webhooks');
             Route::livewire('business', 'pages::portal.business')->name('portal.business');

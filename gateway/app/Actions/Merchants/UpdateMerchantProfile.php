@@ -10,6 +10,7 @@ use App\Exceptions\GatewayException;
 use App\Models\Merchant;
 use App\Models\User;
 use App\Notifications\SettlementAccountChanged;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 final readonly class UpdateMerchantProfile
@@ -61,13 +62,27 @@ final readonly class UpdateMerchantProfile
         return $merchant;
     }
 
-    public function verifySettlementAccount(Merchant $merchant, User $admin): Merchant
+    /**
+     * Verifies the account the admin reviewed. When the merchant changed it after the page was shown, the
+     * fingerprint no longer matches and nothing is verified.
+     */
+    public function verifySettlementAccount(Merchant $merchant, User $admin, string $reviewedFingerprint): Merchant
     {
-        if (blank($merchant->settlement_iban)) {
-            throw GatewayException::cannotUpdate(__('The merchant has not added a settlement account yet.'));
-        }
+        $merchant = DB::transaction(function () use ($merchant, $admin, $reviewedFingerprint): Merchant {
+            $merchant = Merchant::withTrashed()->whereKey($merchant->id)->lockForUpdate()->firstOrFail();
 
-        $merchant->forceFill(['settlement_account_verified_at' => now(), 'settlement_account_verified_by' => $admin->id])->save();
+            if (blank($merchant->settlement_iban)) {
+                throw GatewayException::cannotUpdate(__('The merchant has not added a settlement account yet.'));
+            }
+
+            if (! hash_equals($merchant->settlementAccountFingerprint(), $reviewedFingerprint)) {
+                throw GatewayException::cannotUpdate(__('The settlement account changed after you opened this page. Reload and check it again.'));
+            }
+
+            $merchant->forceFill(['settlement_account_verified_at' => now(), 'settlement_account_verified_by' => $admin->id])->save();
+
+            return $merchant;
+        });
 
         $this->recordAuditLog->handle($admin, 'merchant.settlement_account_verified', $merchant, $merchant, ['iban_last4' => substr((string) $merchant->settlement_iban, -4)]);
 

@@ -8,6 +8,7 @@ use App\Models\Subscription;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Storage;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -41,6 +42,24 @@ Artisan::command('gateway:bill-subscriptions', function () {
 Schedule::command('gateway:bill-subscriptions')->everyFifteenMinutes()->withoutOverlapping()->onOneServer();
 
 Schedule::command('gateway:reconcile')->everyMinute()->withoutOverlapping()->onOneServer();
+
+Artisan::command('gateway:purge-temporary-uploads', function () {
+    $disk = Storage::disk(config('livewire.temporary_file_upload.disk') ?: config('filesystems.default'));
+    $directory = config('livewire.temporary_file_upload.directory') ?: 'livewire-tmp';
+    $cutoff = now()->subDay()->getTimestamp();
+    $deleted = 0;
+
+    foreach ($disk->files($directory) as $path) {
+        if ($disk->lastModified($path) < $cutoff) {
+            $disk->delete($path);
+            $deleted++;
+        }
+    }
+
+    $this->info("Deleted {$deleted} abandoned temporary uploads.");
+})->purpose('Delete Livewire temporary uploads older than a day, which Livewire only cleans up on the next upload');
+
+Schedule::command('gateway:purge-temporary-uploads')->hourly()->onOneServer();
 
 Schedule::command('model:prune')->daily()->onOneServer();
 Schedule::command('queue:prune-failed', ['--hours' => 24 * 30])->daily()->onOneServer();
