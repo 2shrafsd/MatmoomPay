@@ -6,6 +6,7 @@ namespace App\Notifications;
 
 use App\Enums\MerchantStatus;
 use App\Models\Merchant;
+use App\Support\MarkdownText;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -37,19 +38,19 @@ class MerchantStatusChanged extends Notification implements ShouldQueue
 
         $message = match ($this->status) {
             MerchantStatus::Active => $message
-                ->line(__('Good news: we approved :merchant. You can now create live keys and accept real card payments.', ['merchant' => $this->merchant->name]))
+                ->line(__('Good news: we approved :merchant. You can now create live keys and accept real card payments.', ['merchant' => MarkdownText::escape($this->merchant->name)]))
                 ->action(__('Open the dashboard'), route('portal.developers')),
             MerchantStatus::Rejected => $message
-                ->line(__('We could not approve :merchant at this time.', ['merchant' => $this->merchant->name])),
+                ->line(__('We could not approve :merchant at this time.', ['merchant' => MarkdownText::escape($this->merchant->name)])),
             MerchantStatus::Suspended => $message
-                ->line(__('We paused payments for :merchant. Live keys were revoked.', ['merchant' => $this->merchant->name])),
+                ->line(__('We paused payments for :merchant. Live keys were revoked.', ['merchant' => MarkdownText::escape($this->merchant->name)])),
             MerchantStatus::Pending => $message,
             MerchantStatus::Banned => $message
-                ->line(__('We closed :merchant. Payments, API keys and the dashboard are no longer available.', ['merchant' => $this->merchant->name])),
+                ->line(__('We closed :merchant. Payments, API keys and the dashboard are no longer available.', ['merchant' => MarkdownText::escape($this->merchant->name)])),
         };
 
         if ($this->reason !== null && $this->reason !== '') {
-            $message->line(__('Reason: :reason', ['reason' => $this->reason]));
+            $message->line(__('Reason: :reason', ['reason' => MarkdownText::escape($this->reason)]));
         }
 
         return $message->line(__('Reply to this email if you have questions.'));

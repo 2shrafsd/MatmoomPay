@@ -179,15 +179,20 @@ sequenceDiagram
 | **نطاق PCI DSS** | وضع الدفع عبر صفحة البنك يجعل الزبون يكتب بطاقته في صفحة البنك، فينتقل نطاق الامتثال في صفحة الدفع إلى النطاق الأخف SAQ A |
 | **المفاتيح والأسرار** | المفتاح السري يُحفظ مجزّأً (Hash) ويظهر للتاجر مرة واحدة عند إنشائه. رقم IBAN وسر توقيع Webhook مشفّران في قاعدة البيانات |
 | **فصل البيانات** | كل استعلام مقيّد بالتاجر والوضع (اختبار أو حقيقي). طلب سجل تاجر آخر يعيد 404 دون كشف وجوده |
-| **الصلاحيات** | تفويض على الخادم في كل إجراء حسب دور العضو، وتأكيد كلمة المرور قبل صفحات المفاتيح والحساب البنكي |
+| **الصلاحيات** | تفويض على الخادم في كل إجراء حسب دور العضو، وتأكيد كلمة المرور قبل صفحات المفاتيح والحساب البنكي والفريق. يُعاد فحص التأكيد مع كل تحديث Livewire ولا يمكن تجاوزه بتغيير رؤوس الطلب، وصفحات السجلات تعيد فحص الصلاحية مع كل تحديث |
+| **الجلسات واستعادة الحساب** | تغيير كلمة المرور أو إعادة تعيينها ينهي كل الجلسات الأخرى. تغيير البريد (قناة الاستعادة) يتطلب كلمة المرور الحالية ويُشعر البريد القديم. روابط البريد في الإنتاج تُبنى من `APP_URL`، والمضيف الموثوق مطابق حرفيًا لاسم التطبيق |
+| **الفريق** | الدعوات تسقط عند إزالة مرسلها أو خفض دوره، ويُفحص المرسل من جديد عند القبول |
+| **حساب التسوية** | توثيق المشرف مربوط ببصمة الحساب الذي راجعه، فأي تبديل لرقم IBAN بعد فتح الصفحة يُرفض |
 | **الدفع المزدوج والسباقات** | أقفال على مستوى الصف في قاعدة البيانات تمنع الخصم المزدوج والاسترداد الزائد، ومفتاح `Idempotency-Key` لإعادة المحاولة الآمنة. إذا دُفعت جلسة مرتين في اللحظة نفسها تُسترد الدفعة الثانية تلقائيًا |
 | **إشعارات Webhook** | توقيع HMAC-SHA256 على `{body}-{timestamp}` في الترويستين `matmoom-signature` و`matmoom-timestamp`، ورفض الإشعارات الأقدم من 5 دقائق |
 | **حماية SSRF** | منع إرسال Webhook إلى العناوين الداخلية والخاصة، مع تثبيت عنوان IP بعد التحقق منه |
 | **رد البنك** | التحقق من توقيع البنك، ومطابقة المرجع والمبلغ والعملة مع الطلب الأصلي، واكتمال كل محاولة مرة واحدة فقط، ورفض الردود القديمة (أكثر من 15 دقيقة) |
-| **الحد من الإساءة** | حدود معدل (Rate Limiting) على تسجيل الدخول والدفع ورمز التحقق وواجهة البرمجة (لكل مفتاح ولكل عنوان IP) والتصدير والدعوات |
+| **الحد من الإساءة** | حدود معدل (Rate Limiting) على تسجيل الدخول والدفع ورمز التحقق وواجهة البرمجة (لكل مفتاح ولكل عنوان IP) والتصدير والدعوات، وعلى التسجيل ونسيت كلمة المرور وتأكيد كلمة المرور وإعادة إرسال بريد التحقق وتجربة الـ Webhook، ولكل رابط دفع. يُحتسب نطاق IPv6 ‏/64 كاملًا عنوانًا واحدًا |
+| **البريد** | إيصالات وضع الاختبار تصل إلى فريق التاجر فقط، فلا تُستعمل البوابة لإرسال بريد إلى الغرباء. كل نص يكتبه التاجر يُهرَّب قبل إدراجه في الرسائل |
+| **الأموال في الخلفية** | ترتيب أقفال موحّد عند إكمال 3-D Secure، وإلغاء نية الدفع المعلّقة عند إلغاء الاشتراك، واسترداد آلي لأي تجديد يصل بعد الإلغاء، وسلسلة إعادة محاولة واحدة لكل Webhook |
 | **المتصفح** | سياسة أمان المحتوى CSP مبنية على nonce، ومنع تضمين صفحة الدفع في إطار (Clickjacking)، وترويسات HSTS وX-Content-Type-Options وReferrer-Policy |
 | **الحسابات** | تحقق ثنائي (2FA) إلزامي للمشرفين، ودعم مفاتيح المرور (Passkeys)، وحظر الحسابات، وتسجيل أحداث الأمان (تفعيل 2FA، تغيير كلمة المرور، إضافة مفاتيح المرور) |
-| **الملفات المرفوعة** | فحص نوع الملف من محتواه الفعلي لا من امتداده، وتخزين خاص بأسماء عشوائية، وتنزيل إجباري كمرفق بعد التحقق من الصلاحية |
+| **الملفات المرفوعة** | فحص نوع الملف من محتواه الفعلي لا من امتداده، وتخزين خاص بأسماء عشوائية، وتنزيل إجباري كمرفق بعد التحقق من الصلاحية. لا يُعطى رابط رفع مؤقت إلا لمن يحق له رفع المستندات، وبأنواع KYC حتى 5MB، مع حذف آلي كل ساعة للملفات المؤقتة المتروكة |
 | **تصدير CSV** | حماية من حقن الصيغ في جداول البيانات (Formula Injection) |
 | **التدقيق** | سجل غير قابل للتعديل لكل إجراء حساس، مع رقم طلب فريد (Request ID) في كل رد |
 | **الإنتاج** | أمر `php artisan gateway:check-production` يفحص 14 إعدادًا حساسًا ويفشل إن وجد خللًا |
@@ -498,12 +503,12 @@ $valid = ctype_digit($timestamp)
 
 | الجزء | الأمر | الحالة الحالية |
 |---|---|---|
-| البوابة | `cd gateway && php artisan test --compact` | 292 اختبارًا ناجحًا (919 تحققًا) |
+| البوابة | `cd gateway && php artisan test --compact` | 319 اختبارًا ناجحًا (991 تحققًا) |
 | البوابة | `vendor/bin/phpstan analyse` و`vendor/bin/pint --test` | Larastan المستوى 7 وتنسيق Pint |
 | المتجر | `cd store-web && php artisan test --compact` | 21 اختبارًا ناجحًا |
 | التطبيق | `cd store-mobile && flutter analyze && flutter test` | تحليل صارم واختبارات وحدات وواجهات ومقارنة صور |
 
-تغطي الاختبارات: المصادقة بالمفاتيح، والفصل بين التجار وبين الوضعين، ومسار الدفع كاملًا بكل بطاقات الاختبار، ورمز التحقق ومحاولاته، والبطاقات المحفوظة، ونوايا الدفع، والاستردادات، وتوقيع Webhook وحماية SSRF، ومفاتيح عدم التكرار، والأدوار والصلاحيات، ولوحة المالك، والتصدير، والمستندات، والاشتراكات وتجديدها.
+تغطي الاختبارات: المصادقة بالمفاتيح، والفصل بين التجار وبين الوضعين، ومسار الدفع كاملًا بكل بطاقات الاختبار، ورمز التحقق ومحاولاته، والبطاقات المحفوظة، ونوايا الدفع، والاستردادات، وتوقيع Webhook وحماية SSRF، ومفاتيح عدم التكرار، والأدوار والصلاحيات، وتأكيد كلمة المرور وإنهاء الجلسات وحدود المعدل والمضيف الموثوق، ولوحة المالك، والتصدير، والمستندات، والاشتراكات وتجديدها.
 
 ويشغّل GitHub Actions في [`.github/workflows/ci.yml`](.github/workflows/ci.yml) اختبارات الأجزاء الثلاثة مع كل رفع.
 
@@ -533,6 +538,14 @@ $valid = ctype_digit($timestamp)
 ## سجل الإصدارات
 
 يُحدَّث هذا القسم مع كل رفع جديد، ويُضاف الإصدار الأحدث في الأعلى.
+
+### 1.1.0 — 17 نوفمبر 2026 (تقوية أمنية)
+
+- تدقيق أمني مصدري كامل على البوابة (39 وحدة تغطية، وتحقق مستقل مزدوج من كل نتيجة)، وعولجت كل نتائجه: 8 ثغرات مؤكدة و13 قضية تحتاج تحققًا.
+- أهمها: إغلاق تجاوز تأكيد كلمة المرور في Livewire برأس `Accept: application/json`، ووضع صفحة الفريق خلف تأكيد كلمة المرور، واشتراط كلمة المرور لتغيير البريد، وإنهاء الجلسات الأخرى عند تغيير كلمة المرور.
+- منع العضو المُزال من القراءة عبر صفحات مفتوحة، وإسقاط دعواته المعلّقة، وربط توثيق حساب التسوية بما راجعه المشرف.
+- تثبيت المضيف الموثوق، وحدود معدل جديدة على مسارات البريد وتأكيد كلمة المرور، وتقييد الرفع المؤقت وحذفه آليًا، وتصحيح مسارات الأموال في التجديد وإكمال 3-D Secure.
+- اختبارات انحدار جديدة في `gateway/tests/Feature/SecuritySafeguardsTest.php`.
 
 ### 1.0.0 — 17 نوفمبر 2026
 
@@ -704,15 +717,20 @@ sequenceDiagram
 | **PCI DSS scope** | In bank-hosted mode the customer types the card on the bank's page, which moves the payment page to the lighter SAQ A scope |
 | **Keys and secrets** | Secret keys are stored hashed and shown once. IBANs and webhook signing secrets are encrypted at rest |
 | **Data isolation** | Every query is scoped to the merchant and the mode. Another merchant's record returns 404 without revealing it exists |
-| **Authorization** | Server-side checks on every action by team role; password confirmation before the API keys and bank account pages |
+| **Authorization** | Server-side checks on every action by team role; password confirmation before the API keys, bank account and team pages. The confirmation is re-checked on every Livewire update and cannot be skipped by changing request headers, and record pages re-authorize on every update |
+| **Sessions and recovery** | Changing or resetting the password signs out every other session. Changing the email (the recovery channel) needs the current password and notifies the old address. Production email links use `APP_URL`, and the trusted host matches the app host exactly |
+| **Team** | Invitations stop working when their sender is removed or demoted, and the sender is checked again on acceptance |
+| **Settlement account** | An admin's verification is bound to the account they reviewed, so an IBAN swapped after the page opened is refused |
 | **Double charges and races** | Row-level locks prevent double charges and over-refunds; `Idempotency-Key` makes retries safe. If a session is paid twice at the same moment, the second payment is refunded automatically |
 | **Webhooks** | HMAC-SHA256 over `{body}-{timestamp}` in the `matmoom-signature` and `matmoom-timestamp` headers; events older than 5 minutes are rejected |
 | **SSRF** | Webhooks to internal or private addresses are blocked, and the resolved IP is pinned after the check |
 | **Bank responses** | Bank signature verified; reference, amount and currency must match the original request; each attempt completes once; responses older than 15 minutes are rejected |
-| **Abuse limits** | Rate limits on login, payment, OTP, the API (per key and per IP), exports and invitations |
+| **Abuse limits** | Rate limits on login, payment, OTP, the API (per key and per IP), exports and invitations, plus sign-up, password reset, password confirmation, verification resends, test webhooks and each payment link. A whole IPv6 /64 counts as one address |
+| **Email** | Test-mode receipts only reach the merchant's team, so the gateway cannot be used to mail strangers; merchant-written text is escaped in every email |
+| **Background money flows** | One lock order for 3-D Secure completion, pending intents cancelled when a subscription ends, automatic refund of any renewal that lands after cancellation, and one retry chain per webhook |
 | **Browser** | Nonce-based Content Security Policy, frame blocking on the payment page (clickjacking), HSTS, X-Content-Type-Options and Referrer-Policy headers |
 | **Accounts** | Mandatory two-factor authentication for admins, passkeys, account bans, and a log of security events (2FA changes, password changes, passkeys) |
-| **Uploads** | File type checked from the actual content, not the extension; private storage with random names; forced download after an authorization check |
+| **Uploads** | File type checked from the actual content, not the extension; private storage with random names; forced download after an authorization check. Temporary upload links only go to members who may upload documents, KYC types up to 5 MB, and abandoned temporary files are purged hourly |
 | **CSV export** | Protection against spreadsheet formula injection |
 | **Audit** | Append-only log of sensitive actions and a unique request ID on every response |
 | **Production** | `php artisan gateway:check-production` checks 14 sensitive settings and fails if any is unsafe |
@@ -962,7 +980,7 @@ The payment page, API, settlements, subscriptions and webhooks keep working unch
 
 | Part | Command | Current status |
 |---|---|---|
-| Gateway | `cd gateway && php artisan test --compact` | 292 tests passing (919 assertions) |
+| Gateway | `cd gateway && php artisan test --compact` | 319 tests passing (991 assertions) |
 | Gateway | `vendor/bin/phpstan analyse`, `vendor/bin/pint --test` | Larastan level 7, Pint formatting |
 | Store | `cd store-web && php artisan test --compact` | 21 tests passing |
 | App | `cd store-mobile && flutter analyze && flutter test` | Strict analysis, unit, widget and golden tests |
@@ -995,6 +1013,14 @@ GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the
 ## Release notes
 
 This section is updated with every new push; the latest release goes on top.
+
+### 1.1.0 — 17 November 2026 (security hardening)
+
+- Full source security audit of the gateway (39 coverage units, two independent verifications per finding); every result was fixed: 8 confirmed vulnerabilities and 13 needs-validation issues.
+- Highlights: closed a Livewire password-confirmation bypass via `Accept: application/json`, put the team page behind password confirmation, required the current password to change the email, and signed out other sessions on password change.
+- Removed members can no longer read through open pages, their pending invitations are withdrawn, and settlement-account verification is bound to what the admin reviewed.
+- Anchored the trusted host, added rate limits on email and password-confirmation routes, restricted and purged temporary uploads, and fixed money paths in renewals and 3-D Secure completion.
+- New regression tests in `gateway/tests/Feature/SecuritySafeguardsTest.php`.
 
 ### 1.0.0 — 17 November 2026
 

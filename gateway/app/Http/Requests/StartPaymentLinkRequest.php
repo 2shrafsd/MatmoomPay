@@ -26,7 +26,7 @@ class StartPaymentLinkRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:80'],
             'phone' => [$link->collect_phone ? 'required' : 'nullable', 'string', 'regex:/^\+?[0-9 ]{8,16}$/'],
-            'email' => [$link->collect_email ? 'required' : 'nullable', 'email:rfc', 'max:120'],
+            'email' => $link->collect_email ? ['required', 'email:rfc', 'max:120'] : ['prohibited'],
             'amount' => [$link->hasFixedAmount() ? 'prohibited' : 'required', 'string', Money::amountRule()],
         ];
     }

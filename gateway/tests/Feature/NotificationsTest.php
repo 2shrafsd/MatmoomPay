@@ -67,11 +67,11 @@ test('a rejected document notifies the merchant with the reason', function () {
 test('a payment link payer who left an email receives a receipt', function () {
     Queue::fake();
     $merchant = Merchant::factory()->create(['name' => 'Bait <b>Al</b> Luban']);
-    $link = PaymentLink::factory()->for($merchant)->create(['collect_email' => true]);
+    $link = PaymentLink::factory()->for($merchant)->create(['collect_email' => true, 'livemode' => true]);
 
     $this->post(route('links.start', $link), ['name' => 'Aisha', 'email' => 'aisha@example.om'])->assertRedirect();
     $session = CheckoutSession::sole();
-    $payment = Payment::factory()->for($merchant)->create(['status' => 'InProcess', 'checkout_session_id' => $session->id, 'amount' => $session->total_amount]);
+    $payment = Payment::factory()->for($merchant)->create(['status' => 'InProcess', 'livemode' => true, 'checkout_session_id' => $session->id, 'amount' => $session->total_amount]);
 
     app(FinalizeSuccessfulPayment::class)->handle($payment);
 
@@ -81,5 +81,47 @@ test('a payment link payer who left an email receives a receipt', function () {
         return $notifiable->routes['mail'] === 'aisha@example.om'
             && str_contains($html, '&lt;b&gt;Al&lt;/b&gt;')
             && ! str_contains($html, '<b>Al</b>');
+    });
+});
+
+/**
+ * Starts a payment link checkout for the given payer email and completes its payment.
+ */
+function payLinkAs(PaymentLink $link, string $email): void
+{
+    test()->post(route('links.start', $link), ['name' => 'Aisha', 'email' => $email])->assertRedirect();
+    $session = CheckoutSession::sole();
+    $payment = Payment::factory()->for($link->merchant)->create(['status' => 'InProcess', 'livemode' => $link->livemode, 'checkout_session_id' => $session->id, 'amount' => $session->total_amount]);
+
+    app(FinalizeSuccessfulPayment::class)->handle($payment);
+}
+
+test('test-mode payments do not email receipts to strangers', function () {
+    Queue::fake();
+    $link = PaymentLink::factory()->for(Merchant::factory()->pending())->create(['collect_email' => true, 'livemode' => false]);
+
+    payLinkAs($link, 'victim@example.test');
+
+    Notification::assertNothingSentTo(new AnonymousNotifiable);
+});
+
+test('test-mode receipts still reach the merchant team', function () {
+    Queue::fake();
+    $owner = User::factory()->create(['email' => 'owner@example.test']);
+    $link = PaymentLink::factory()->for(Merchant::factory()->withMember($owner))->create(['collect_email' => true, 'livemode' => false]);
+
+    payLinkAs($link, 'owner@example.test');
+
+    Notification::assertSentOnDemand(PaymentReceipt::class);
+});
+
+test('a payment link title cannot inject links into the receipt', function () {
+    Queue::fake();
+    $link = PaymentLink::factory()->for(Merchant::factory())->create(['collect_email' => true, 'livemode' => true, 'title' => '[Verify card](https://evil.example/v)']);
+
+    payLinkAs($link, 'aisha@example.om');
+
+    Notification::assertSentOnDemand(PaymentReceipt::class, function (PaymentReceipt $notification, array $channels, AnonymousNotifiable $notifiable) {
+        return ! str_contains($notification->toMail($notifiable)->render()->toHtml(), 'href="https://evil.example/v"');
     });
 });

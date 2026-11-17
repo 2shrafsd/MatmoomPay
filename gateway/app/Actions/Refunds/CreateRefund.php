@@ -180,8 +180,15 @@ final readonly class CreateRefund
         $session = $payment->checkoutSession;
         $email = $session?->metadata['Customer email'] ?? null;
 
-        if ($session !== null && $session->payment_link_id !== null && is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL) !== false) {
-            Notification::route('mail', $email)->notify((new RefundReceipt($refund, $session->load('merchant')))->locale(app()->getLocale())->afterCommit());
+        if ($session === null || $session->payment_link_id === null || ! is_string($email) || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            return;
         }
+
+        // Sandbox refunds are free and unlimited, so their receipts only go to the merchant's own team.
+        if (! $payment->livemode && ! $payment->merchant->isTeamEmail($email)) {
+            return;
+        }
+
+        Notification::route('mail', $email)->notify((new RefundReceipt($refund, $session->load('merchant')))->locale(app()->getLocale())->afterCommit());
     }
 }

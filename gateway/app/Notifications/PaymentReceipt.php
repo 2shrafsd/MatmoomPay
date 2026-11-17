@@ -39,7 +39,7 @@ class PaymentReceipt extends Notification implements ShouldQueue
             ->line(__(':merchant received your payment of :amount.', ['merchant' => MarkdownText::escape($merchant->name), 'amount' => Money::format($this->payment->amount, $this->payment->currency)]));
 
         foreach ($this->session->products as $product) {
-            $message->line($product['name'].' × '.$product['quantity'].' — '.Money::decimal($product['quantity'] * $product['unit_amount']));
+            $message->line(MarkdownText::escape((string) $product['name']).' × '.$product['quantity'].' — '.Money::decimal($product['quantity'] * $product['unit_amount']));
         }
 
         return $message

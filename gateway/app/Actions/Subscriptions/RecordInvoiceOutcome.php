@@ -79,8 +79,9 @@ final readonly class RecordInvoiceOutcome
         }
 
         if ($attempts >= self::MAX_ATTEMPTS) {
-            $invoice->update(['status' => InvoiceStatus::Void, 'next_payment_attempt' => null]);
+            // Cancel first: cancel() cancels the renewal intents of open invoices (this one included), then voids them.
             $this->cancel($subscription, 'Renewal payment failed '.self::MAX_ATTEMPTS.' times.');
+            $invoice->update(['status' => InvoiceStatus::Void, 'next_payment_attempt' => null]);
 
             return;
         }

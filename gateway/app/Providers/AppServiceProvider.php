@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Http\Middleware\EnsureMerchantAccount;
 use App\Http\Middleware\EnsurePlatformAdmin;
+use App\Http\Middleware\RequirePassword;
 use App\Models\ApiKey;
 use App\Models\CheckoutSession;
 use App\Models\Customer;
@@ -23,9 +24,9 @@ use App\Models\Subscription;
 use App\Models\SubscriptionInvoice;
 use App\Models\User;
 use App\Models\WebhookEndpoint;
+use App\Support\ClientAddress;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
-use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -80,6 +81,8 @@ class AppServiceProvider extends ServiceProvider
 
         if (app()->isProduction()) {
             URL::forceScheme('https');
+            // Absolute links in email (password reset, verification) always use our own address, never the Host header.
+            URL::forceRootUrl((string) config('app.url'));
         }
 
         if (config('security.trusted_proxies') !== []) {
@@ -163,7 +166,11 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(5)->by('ref:'.substr(hash('sha256', (string) $request->input('p')), 0, 32)),
         ]);
 
-        RateLimiter::for('payment-link', fn (Request $request) => Limit::perMinute(10)->by('ip:'.$request->ip()));
+        // Each start creates a lasting checkout session and webhook, so a public link is also capped as a whole.
+        RateLimiter::for('payment-link', fn (Request $request) => [
+            Limit::perMinute(10)->by('ip:'.ClientAddress::key($request)),
+            Limit::perHour(120)->by('link:'.self::routeKey($request, 'link')),
+        ]);
     }
 
     private static function routeKey(Request $request, string $parameter): string

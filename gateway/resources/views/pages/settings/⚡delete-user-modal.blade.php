@@ -5,6 +5,7 @@ use App\Enums\MerchantRole;
 use App\Models\Merchant;
 use App\Livewire\Actions\Logout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
@@ -18,6 +19,17 @@ new class extends Component {
      */
     public function deleteUser(Logout $logout): void
     {
+        // The password check here must not become an unthrottled way to guess the account password.
+        $key = 'delete-account-password:'.Auth::id();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            throw ValidationException::withMessages([
+                'password' => __('You tried this too many times in a short while. Wait a minute, then try again.'),
+            ]);
+        }
+
+        RateLimiter::hit($key, 60);
+
         $this->validate([
             'password' => $this->currentPasswordRules(),
         ]);

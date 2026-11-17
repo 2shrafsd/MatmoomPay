@@ -11,6 +11,15 @@ use Livewire\Attributes\Title;
 new #[Title('Customer')] class extends PortalComponent {
     public Customer $customer;
 
+    /**
+     * Livewire snapshots outlive the page, so the record is re-authorized on every update, not only at mount.
+     */
+    public function hydrate(): void
+    {
+        $this->authorize('view', $this->customer);
+        $this->ensureInAccount($this->customer);
+    }
+
     public function mount(Customer $customer): void
     {
         $this->authorize('view', $customer);

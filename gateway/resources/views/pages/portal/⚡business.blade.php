@@ -17,7 +17,21 @@ use Livewire\WithFileUploads;
 use App\Support\BusinessActivities;
 
 new #[Title('Business profile')] class extends PortalComponent {
-    use WithFileUploads;
+    use WithFileUploads {
+        _startUpload as private startLivewireUpload;
+    }
+
+    /**
+     * Livewire hands out signed upload URLs here; only people who may upload documents get one.
+     *
+     * @param  array<int, mixed>  $fileInfo
+     */
+    public function _startUpload($name, $fileInfo, $isMultiple): void
+    {
+        $this->authorize('update', $this->merchant());
+
+        $this->startLivewireUpload($name, $fileInfo, $isMultiple);
+    }
 
     public string $documentType = 'commercial_registration';
 
@@ -103,6 +117,8 @@ new #[Title('Business profile')] class extends PortalComponent {
             return;
         }
 
+        // The stored copy is the record; the temporary upload must not linger on disk.
+        $this->documentFile->delete();
         $this->reset('documentFile');
         Flux::toast(variant: 'success', text: __('Document uploaded. Our team will review it.'));
     }

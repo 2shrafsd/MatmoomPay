@@ -85,6 +85,9 @@ new #[Layout('layouts::panel'), Title('Security settings')] class extends Compon
             'password' => $validated['password'],
         ]);
 
+        // Ends the user's other sessions and keeps this one signed in with the new password hash.
+        Auth::logoutOtherDevices($validated['password']);
+
         $recordAuditLog->handle(Auth::user(), 'user.password_changed', null, Auth::user());
 
         $this->reset('current_password', 'password', 'password_confirmation');

@@ -7,8 +7,10 @@ use App\Http\Middleware\EnsureMerchantAccount;
 use App\Http\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use App\Http\Middleware\RememberPanel;
+use App\Http\Middleware\RequirePassword;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\ThrottleSensitiveAuthRequests;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -29,11 +31,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Signs out every other session once the account's password changes (settings change or reset).
+        $middleware->authenticateSessions();
+
         $middleware->web(append: [
             ConvertArabicDigits::class,
             SetLocale::class,
             SecurityHeaders::class,
             EnsureUserIsNotBanned::class,
+            ThrottleSensitiveAuthRequests::class,
         ]);
 
         // Banks post the cardholder back from their own domain; the callback is authenticated by the bank's signature.
@@ -41,12 +47,18 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Password reset and verification links are built from the Host header, so only our own host is
         // accepted (Laravel skips this check locally and in tests).
-        $middleware->trustHosts(at: fn (): array => array_filter([parse_url((string) config('app.url'), PHP_URL_HOST)]));
+        // Symfony treats each entry as a regex, so the host is quoted and anchored to match exactly.
+        $middleware->trustHosts(at: function (): array {
+            $host = parse_url((string) config('app.url'), PHP_URL_HOST);
+
+            return is_string($host) && $host !== '' ? ['^'.preg_quote($host).'$'] : [];
+        });
 
         $middleware->alias([
             'merchant' => EnsureMerchantAccount::class,
             'platform.admin' => EnsurePlatformAdmin::class,
             'panel' => RememberPanel::class,
+            'password.confirm' => RequirePassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -156,6 +157,27 @@ class Merchant extends Model
         $pivot = $member->getRelationValue('pivot');
 
         return MerchantRole::tryFrom($pivot->role);
+    }
+
+    /**
+     * True when the address belongs to someone on this merchant's team. Test-mode mail only goes to them,
+     * so sandbox payments cannot be used to send gateway email to strangers.
+     */
+    public function isTeamEmail(string $email): bool
+    {
+        return $this->users()->whereRaw('LOWER(email) = ?', [Str::lower($email)])->exists();
+    }
+
+    /**
+     * Identifies the exact settlement account on screen, so a verification can be bound to what the admin reviewed.
+     */
+    public function settlementAccountFingerprint(): string
+    {
+        return hash_hmac('sha256', implode('|', [
+            (string) $this->settlement_bank_name,
+            (string) $this->settlement_account_name,
+            (string) $this->settlement_iban,
+        ]), (string) config('app.key'));
     }
 
     public function maskedIban(): ?string

@@ -1155,5 +1155,12 @@
     "{1} every week|{2} every 2 weeks|[3,*] every :count weeks": "كل :count أسبوع|كل أسبوع|كل أسبوعين|كل :count أسابيع|كل :count أسبوعًا|كل :count أسبوع",
     "{1} every year|{2} every 2 years|[3,*] every :count years": "كل :count سنة|كل سنة|كل سنتين|كل :count سنوات|كل :count سنةً|كل :count سنة",
     ":merchant is closed on :app": "أُغلق حساب :merchant على :app",
-    "We closed :merchant. Payments, API keys and the dashboard are no longer available.": "أغلقنا حساب :merchant. لم تعد المدفوعات ومفاتيح API ولوحة التحكم متاحة."
+    "We closed :merchant. Payments, API keys and the dashboard are no longer available.": "أغلقنا حساب :merchant. لم تعد المدفوعات ومفاتيح API ولوحة التحكم متاحة.",
+    "Password confirmation required.": "يلزم تأكيد كلمة المرور.",
+    "Your account email was changed": "تغيّر البريد الإلكتروني لحسابك",
+    "The email address on your account was changed to :email.": "تغيّر البريد الإلكتروني لحسابك إلى :email.",
+    "If you did not make this change, reply to this email right away so we can secure your account.": "إن لم تكن أنت من أجرى هذا التغيير، فردّ على هذه الرسالة فورًا لنؤمّن حسابك.",
+    "Required only when you change your email address.": "مطلوبة فقط عند تغيير البريد الإلكتروني.",
+    "Too many verification emails. Please wait a while and try again.": "أُرسلت رسائل تحقق كثيرة. انتظر قليلًا ثم حاول مرة أخرى.",
+    "The settlement account changed after you opened this page. Reload and check it again.": "تغيّر حساب التسوية بعد أن فتحت هذه الصفحة. أعد تحميلها وراجعه من جديد."
 }

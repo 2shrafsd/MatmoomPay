@@ -112,10 +112,23 @@ test('an admin verifies a changed account from the merchant page', function () {
     $merchant = Merchant::factory()->withSettlementAccount()->create(['settlement_account_verified_at' => null]);
     $this->actingAs(reviewer());
 
-    Livewire\Livewire::test('pages::admin.merchants.show', ['merchant' => $merchant])->call('verifySettlementAccount');
+    Livewire\Livewire::test('pages::admin.merchants.show', ['merchant' => $merchant])->call('verifySettlementAccount', $merchant->settlementAccountFingerprint());
 
     expect($merchant->refresh()->hasVerifiedSettlementAccount())->toBeTrue();
     expect(Settlement::count())->toBe(0);
+});
+
+test('an admin verification does not approve an account swapped after the page was shown', function () {
+    $owner = User::factory()->create();
+    $merchant = Merchant::factory()->withSettlementAccount()->withMember($owner)->create(['settlement_account_verified_at' => null]);
+    $reviewed = $merchant->settlementAccountFingerprint();
+    $this->actingAs(reviewer());
+    $page = Livewire\Livewire::test('pages::admin.merchants.show', ['merchant' => $merchant]);
+
+    app(UpdateMerchantProfile::class)->updateSettlementAccount($merchant->fresh(), 'Other Bank', 'Someone Else', 'SD8811000000000000000001', $owner);
+    $page->call('verifySettlementAccount', $reviewed);
+
+    expect($merchant->refresh()->settlement_account_verified_at)->toBeNull();
 });
 
 test('an admin without two-factor cannot download merchant identity documents', function () {

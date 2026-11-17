@@ -24,6 +24,10 @@ final readonly class UpdateTeamMember
 
         $merchant->users()->updateExistingPivot($member->id, ['role' => $role->value]);
 
+        if (! $role->canManageTeam()) {
+            $this->withdrawInvitationsFrom($merchant, $member);
+        }
+
         $this->recordAuditLog->handle($actor, 'team.role_changed', $merchant, $member, ['role' => $role->value]);
     }
 
@@ -32,6 +36,7 @@ final readonly class UpdateTeamMember
         $this->guardOwner($merchant, $member);
 
         $merchant->users()->detach($member->id);
+        $this->withdrawInvitationsFrom($merchant, $member);
 
         if ($member->current_merchant_id === $merchant->id) {
             $member->current_merchant_id = null;
@@ -39,6 +44,14 @@ final readonly class UpdateTeamMember
         }
 
         $this->recordAuditLog->handle($actor, 'team.removed', $merchant, $member);
+    }
+
+    /**
+     * An invitation carries its sender's authority, so it ends when the sender can no longer manage the team.
+     */
+    private function withdrawInvitationsFrom(Merchant $merchant, User $member): void
+    {
+        $merchant->invitations()->where('invited_by', $member->id)->whereNull('accepted_at')->delete();
     }
 
     private function guardOwner(Merchant $merchant, User $member): void

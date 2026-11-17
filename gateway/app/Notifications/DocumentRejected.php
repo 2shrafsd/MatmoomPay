@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\MerchantDocument;
+use App\Support\MarkdownText;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -29,7 +30,7 @@ class DocumentRejected extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject(__('Please upload a new :document', ['document' => $this->document->type->label()]))
             ->line(__('Our review team could not accept the :document you uploaded.', ['document' => $this->document->type->label()]))
-            ->line(__('Reason: :reason', ['reason' => (string) $this->document->review_note]))
+            ->line(__('Reason: :reason', ['reason' => MarkdownText::escape((string) $this->document->review_note)]))
             ->action(__('Upload a new document'), route('portal.business'));
     }
 }

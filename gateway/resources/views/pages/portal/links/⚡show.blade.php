@@ -18,6 +18,15 @@ use Livewire\Attributes\Title;
 new #[Title('Payment link')] class extends PortalComponent {
     public PaymentLink $link;
 
+    /**
+     * Livewire snapshots outlive the page, so the record is re-authorized on every update, not only at mount.
+     */
+    public function hydrate(): void
+    {
+        $this->authorize('view', $this->link);
+        $this->ensureInAccount($this->link);
+    }
+
     public function mount(PaymentLink $link): void
     {
         $this->authorize('view', $link);
