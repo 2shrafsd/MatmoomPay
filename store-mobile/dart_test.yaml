@@ -1,0 +1,3 @@
+tags:
+  golden:
+    description: Pixel comparisons recorded on macOS; skip on other hosts with --exclude-tags golden.

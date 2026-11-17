@@ -1,0 +1,274 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source '../views';
+@source '../js';
+@source '../../app/Enums';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+/* Light only: the dark variant never matches, so stray dark: utilities stay inert. */
+@custom-variant dark (&:where(.force-dark-never, .force-dark-never *));
+
+@theme {
+    --font-sans: 'Readex Pro', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* Ink: the deep green of headings, primary buttons and data cards */
+    --color-ink-950: oklch(0.22 0.04 172);
+    --color-ink-900: oklch(0.29 0.052 172);
+    --color-ink-800: oklch(0.36 0.064 170);
+    --color-ink-700: oklch(0.43 0.074 168);
+    --color-ink-600: oklch(0.52 0.085 166);
+
+    /* Mint: the bright signature green and its soft tints */
+    --color-mint-50: oklch(0.985 0.014 160);
+    --color-mint-100: oklch(0.966 0.035 160);
+    --color-mint-200: oklch(0.93 0.07 160);
+    --color-mint-300: oklch(0.885 0.11 159);
+    --color-mint-400: oklch(0.845 0.15 158);
+    --color-mint-500: oklch(0.77 0.16 156);
+    --color-mint-600: oklch(0.66 0.15 155);
+
+    /* Brand scale kept for existing views: 50–400 mint, 500–950 ink */
+    --color-brand-50: var(--color-mint-50);
+    --color-brand-100: var(--color-mint-100);
+    --color-brand-200: var(--color-mint-200);
+    --color-brand-300: var(--color-mint-300);
+    --color-brand-400: var(--color-mint-400);
+    --color-brand-500: var(--color-mint-600);
+    --color-brand-600: var(--color-ink-600);
+    --color-brand-700: var(--color-ink-800);
+    --color-brand-800: var(--color-ink-900);
+    --color-brand-900: var(--color-ink-950);
+    --color-brand-950: oklch(0.18 0.032 174);
+
+    --color-gold-100: oklch(0.97 0.04 88);
+    --color-gold-300: oklch(0.9 0.11 86);
+    --color-gold-500: oklch(0.8 0.14 78);
+    --color-gold-700: oklch(0.58 0.12 65);
+
+    /* Neutrals with a whisper of green so greys sit well next to ink and mint */
+    --color-zinc-50: oklch(0.985 0.004 165);
+    --color-zinc-100: oklch(0.965 0.006 165);
+    --color-zinc-200: oklch(0.92 0.009 165);
+    --color-zinc-300: oklch(0.86 0.012 165);
+    --color-zinc-400: oklch(0.7 0.015 165);
+    --color-zinc-500: oklch(0.56 0.016 165);
+    --color-zinc-600: oklch(0.45 0.016 165);
+    --color-zinc-700: oklch(0.37 0.015 165);
+    --color-zinc-800: oklch(0.27 0.013 165);
+    --color-zinc-900: oklch(0.2 0.011 165);
+    --color-zinc-950: oklch(0.14 0.009 165);
+
+    --color-canvas: oklch(0.982 0.006 162);
+
+    --color-accent: var(--color-ink-800);
+    --color-accent-content: var(--color-ink-800);
+    --color-accent-foreground: var(--color-white);
+
+    --radius-card: 1.75rem;
+    --radius-panel: 2rem;
+    --shadow-card: 0 1px 2px oklch(0.3 0.04 170 / 0.05), 0 12px 32px -18px oklch(0.3 0.05 170 / 0.25);
+    --shadow-lift: 0 30px 70px -30px oklch(0.3 0.07 170 / 0.45);
+}
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-zinc-200, currentColor);
+    }
+
+    html {
+        -webkit-tap-highlight-color: transparent;
+        color-scheme: light;
+    }
+
+    body {
+        font-feature-settings: 'ss01';
+    }
+
+    .ltr-nums {
+        direction: ltr;
+        unicode-bidi: isolate;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@layer components {
+    /* Display headlines: tight Latin tracking, never applied to Arabic where letters connect */
+    .display {
+        @apply font-medium text-ink-900;
+        letter-spacing: -0.045em;
+        line-height: 0.98;
+    }
+
+    [dir='rtl'] .display {
+        letter-spacing: 0;
+        line-height: 1.25;
+    }
+
+    .eyebrow {
+        @apply text-xs font-medium tracking-[0.12em] text-ink-800 uppercase;
+    }
+
+    [dir='rtl'] .eyebrow {
+        letter-spacing: 0;
+    }
+
+    .pill-badge {
+        @apply inline-flex items-center gap-2 rounded-full border border-ink-800/25 bg-mint-400 px-4 py-1.5 text-xs font-medium text-ink-900;
+    }
+
+    .surface {
+        @apply rounded-(--radius-card) border border-zinc-200/80 bg-white shadow-(--shadow-card);
+    }
+
+    .ink-card {
+        @apply rounded-(--radius-card) bg-ink-900 text-white shadow-(--shadow-lift);
+    }
+
+    .mint-card {
+        @apply rounded-(--radius-card) bg-mint-400 text-ink-950;
+    }
+
+    .field-input {
+        @apply block min-h-12 w-full rounded-2xl border border-zinc-300 bg-white px-4 text-base text-zinc-900 transition outline-none placeholder:text-zinc-400 focus-visible:border-ink-800 focus-visible:ring-4 focus-visible:ring-mint-400/40 aria-invalid:border-red-500 aria-invalid:ring-red-500/15;
+    }
+
+    /* The reference's signature button: an ink pill wrapped in a thin outer ring */
+    .btn-primary {
+        @apply inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-ink-800 px-7 text-base font-medium text-white transition hover:bg-ink-900 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60;
+        box-shadow: 0 0 0 3px var(--color-white), 0 0 0 4.5px var(--color-ink-800);
+    }
+
+    .btn-primary:focus-visible {
+        box-shadow: 0 0 0 3px var(--color-white), 0 0 0 6px var(--color-mint-500);
+    }
+
+    .btn-mint {
+        @apply inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-mint-400 px-7 text-base font-medium text-ink-950 transition hover:bg-mint-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-mint-400/50;
+    }
+
+    .btn-secondary {
+        @apply inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-zinc-300 bg-white px-6 text-base font-medium text-ink-900 transition hover:border-ink-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-mint-400/50;
+    }
+
+    .btn-ghost {
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-sm font-medium text-ink-900 transition hover:bg-mint-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-mint-400/40;
+    }
+
+    /* Faint vertical rules and concentric rings from the reference hero */
+    .grid-rules {
+        background-image: linear-gradient(to right, var(--color-zinc-200) 1px, transparent 1px);
+        background-size: calc(100% / 4) 100%;
+    }
+
+    .rings {
+        background-image: radial-gradient(circle, transparent 0 34%, var(--color-zinc-200) 34% calc(34% + 1px), transparent calc(34% + 1px) 48%, var(--color-zinc-200) 48% calc(48% + 1px), transparent calc(48% + 1px) 62%, var(--color-zinc-200) 62% calc(62% + 1px), transparent calc(62% + 1px));
+    }
+
+    .mint-wash {
+        background: linear-gradient(180deg, var(--color-mint-100) 0%, var(--color-mint-50) 55%, var(--color-white) 100%);
+    }
+}
+
+/* Flux components in the new language */
+[data-flux-button] {
+    border-radius: 9999px;
+}
+
+[data-flux-button][data-flux-button-variant='primary'],
+button[data-flux-button].bg-\[var\(--color-accent\)\] {
+    box-shadow: 0 0 0 2px var(--color-white), 0 0 0 3.5px var(--color-ink-800);
+}
+
+[data-flux-control]:not([data-flux-checkbox], [data-flux-switch], [data-flux-radio]) {
+    border-radius: 1rem;
+}
+
+[data-flux-field]:not(ui-radio, ui-checkbox) {
+    @apply grid gap-2;
+}
+
+[data-flux-label] {
+    @apply mb-0! leading-tight!;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-4 ring-mint-400/40;
+    border-color: var(--color-ink-800);
+}
+
+[data-flux-sidebar-item][data-current] {
+    background: var(--color-ink-800) !important;
+    color: var(--color-white) !important;
+}
+
+[data-flux-sidebar-item][data-current] [data-flux-icon] {
+    color: var(--color-mint-400) !important;
+}
+
+[data-flux-modal] > dialog,
+[data-flux-modal] [data-flux-modal-panel] {
+    border-radius: var(--radius-panel);
+}
+
+/*
+ * Data tables. Every <flux:table> sits in a card (.surface > .data-table): a tinted header row, cells padded
+ * away from the card edge, calm row hover, and the card's rounded corners clipping the header tint.
+ */
+.surface {
+    scroll-margin-top: 5.5rem;
+}
+
+.data-table {
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+[data-flux-table] [data-flux-column] {
+    background: var(--color-zinc-50);
+    border-bottom: 1px solid var(--color-zinc-200);
+    padding-block: 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-zinc-500);
+}
+
+[data-flux-table] [data-flux-cell] {
+    padding-block: 0.85rem;
+    vertical-align: middle;
+    border-color: var(--color-zinc-100);
+    transition: background-color 150ms ease;
+}
+
+[data-flux-table] [data-flux-column]:first-child,
+[data-flux-table] [data-flux-cell]:first-child {
+    padding-inline-start: 1.25rem;
+}
+
+[data-flux-table] [data-flux-column]:last-child,
+[data-flux-table] [data-flux-cell]:last-child {
+    padding-inline-end: 1.25rem;
+}
+
+[data-flux-table] [data-flux-row]:hover > [data-flux-cell] {
+    background: color-mix(in oklab, var(--color-mint-50) 70%, var(--color-white));
+}
+
+[data-flux-table] [data-flux-cell] a:not([data-flux-button]) {
+    text-underline-offset: 3px;
+}
+
+/* A table that follows a heading inside the same card gets a hairline instead of a second tint edge. */
+.data-table:not(:first-child) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}

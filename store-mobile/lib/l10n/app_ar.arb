@@ -1,0 +1,179 @@
+{
+  "@@locale": "ar",
+  "appTitle": "متجر",
+  "heroEyebrow": "سماعات لاسلكية",
+  "heroHeadline": "صوت نقي\nومكالمات واضحة\nطوال يوم العمل.",
+  "@heroHeadline": {
+    "description": "Hero headline, exactly three lines"
+  },
+  "heroBody": "سماعات ومكبرات صوت للمكتب والبيت، بأسعار بالجنيه السوداني وتوصيل إلى الباب.",
+  "heroCta": "تصفّح السماعات",
+  "featuresEyebrow": "المزايا",
+  "featureBatteryTitle": "بطارية تكفي\nيوم العمل",
+  "featureBatteryBody": "شحنة واحدة تكفي يوم عمل كامل، والشحن السريع يعطيك ساعات في دقائق.",
+  "featureMicTitle": "مكالمات\nواضحة",
+  "featureMicBody": "ميكروفونات تخفف ضجيج المكان فيسمعك الطرف الآخر بوضوح.",
+  "featureComfortTitle": "مريحة\nلساعات",
+  "featureComfortBody": "وسائد ناعمة ووزن خفيف لجلسات العمل والدراسة الطويلة.",
+  "productsEyebrow": "المنتجات",
+  "categoryHeadphones": "سماعات رأس",
+  "categoryEarbuds": "سماعات أذن",
+  "categorySpeakers": "مكبرات صوت",
+  "categoryAccessories": "إكسسوارات",
+  "allCategories": "الكل",
+  "allProducts": "كل المنتجات",
+  "sort": "الترتيب",
+  "sortNewest": "الأحدث",
+  "sortPriceLowToHigh": "السعر من الأقل",
+  "sortPriceHighToLow": "السعر من الأعلى",
+  "searchTooltip": "بحث",
+  "searchHint": "ابحث باسم المنتج",
+  "closeSearch": "أغلق البحث",
+  "noResultsTitle": "لا توجد منتجات بهذا الاسم",
+  "noResultsBody": "جرّب كلمة أخرى أو اختر «الكل».",
+  "productDetailsHint": "اعرض التفاصيل",
+  "testCardHint": "للتجربة: البطاقة 4242 4242 4242 4242، أي تاريخ انتهاء قادم، أي CVC، ورمز التحقق 1234.",
+  "@testCardHint": {
+    "description": "Reminder of the MatmoomPay sandbox card, shown on the cart screen"
+  },
+  "@appTitle": {
+    "description": "Shop name shown in the app bar and task switcher"
+  },
+  "addToCart": "أضف للسلة",
+  "addedToCart": "أضفنا {name} إلى السلة",
+  "@addedToCart": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "maxQuantityReached": "الحد الأعلى 10 قطع من المنتج الواحد",
+  "cartTooltip": "السلة",
+  "cartItemCount": "{count, plural, =0{السلة فارغة} =1{في السلة قطعة واحدة} =2{في السلة قطعتان} few{في السلة {count} قطع} many{في السلة {count} قطعة} other{في السلة {count} قطعة}}",
+  "@cartItemCount": {
+    "description": "Screen-reader label for the cart button",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "myOrdersTitle": "طلباتي",
+  "languageToggle": "EN",
+  "@languageToggle": {
+    "description": "Name of the OTHER language, shown on the switch button"
+  },
+  "changeLanguageTooltip": "غيّر اللغة",
+  "productsEmptyTitle": "لا توجد منتجات حاليًا",
+  "productsEmptyBody": "لم يضف المتجر منتجات بعد. اسحب الشاشة للأسفل لتحديثها.",
+  "retry": "حاول مرة أخرى",
+  "errorNetwork": "تعذّر الاتصال بالمتجر. تأكد من الإنترنت وأن خادم متجر يعمل، ثم حاول مرة أخرى.",
+  "errorGatewayUnavailable": "بوابة الدفع لا تستجيب الآن. انتظر قليلًا وحاول مرة أخرى.",
+  "errorThrottled": "طلبات كثيرة في وقت قصير. انتظر دقيقة ثم حاول مرة أخرى.",
+  "errorServer": "حدث خلل في خادم المتجر (رمز {code}). حاول بعد قليل.",
+  "@errorServer": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "errorNotFound": "لم نجد هذا الطلب.",
+  "errorParsing": "وصلنا رد غير مفهوم من المتجر. حدّث التطبيق أو أبلغ فريق المتجر.",
+  "errorUnknown": "حدث شيء لم نتوقعه. حاول مرة أخرى.",
+  "errorValidation": "راجع البيانات المكتوبة ثم حاول مرة أخرى.",
+  "amountSdg": "{amount} ج.س",
+  "@amountSdg": {
+    "description": "Whole Sudanese pounds",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cartTitle": "السلة",
+  "cartEmptyTitle": "سلتك فارغة",
+  "cartEmptyBody": "أضف منتجًا من صفحة المنتجات ثم ارجع هنا للدفع.",
+  "browseProducts": "تصفّح المنتجات",
+  "increaseQuantity": "زيادة الكمية",
+  "decreaseQuantity": "إنقاص الكمية",
+  "removeItem": "احذف من السلة",
+  "quantityValue": "الكمية {quantity}",
+  "@quantityValue": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "cartTotal": "الإجمالي",
+  "customerDetailsTitle": "بياناتك",
+  "customerNameLabel": "الاسم",
+  "customerPhoneLabel": "رقم الهاتف",
+  "customerPhoneHint": "+249 912 345 678",
+  "nameRequired": "اكتب اسمك",
+  "nameTooLong": "الاسم أطول من 80 حرفًا",
+  "phoneRequired": "اكتب رقم هاتفك",
+  "phoneInvalid": "اكتب من 8 إلى 16 رقمًا، ويمكن أن يبدأ الرقم بـ +",
+  "payAmount": "ادفع {amount}",
+  "@payAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentSecureNote": "تكتب بيانات البطاقة في صفحة بوابة MatmoomPay، ولا يراها التطبيق ولا المتجر.",
+  "paymentTitle": "الدفع",
+  "closePayment": "أغلق صفحة الدفع",
+  "paymentLoadFailed": "تعذّر فتح صفحة الدفع. تأكد من الاتصال وأن بوابة MatmoomPay تعمل.",
+  "reload": "أعد التحميل",
+  "orderResultTitle": "حالة الطلب",
+  "statusPaidTitle": "تم الدفع",
+  "statusPaidBody": "وصلنا مبلغ {amount}. سنتصل بك على رقمك لترتيب التوصيل.",
+  "@statusPaidBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "orderReference": "رقم الطلب",
+  "invoiceNumber": "رقم الفاتورة",
+  "paidAt": "وقت الدفع",
+  "orderTotal": "المبلغ",
+  "statusConfirmingTitle": "نتأكد من الدفع",
+  "statusConfirmingBody": "ننتظر تأكيد بوابة الدفع، ويأخذ هذا عادةً بضع ثوانٍ.",
+  "statusPendingTitle": "لم يصلنا تأكيد الدفع بعد",
+  "statusPendingBody": "إذا خُصم المبلغ من بطاقتك فسيظهر الطلب مدفوعًا خلال دقائق. تحقق مرة أخرى بعد قليل.",
+  "checkAgain": "تحقق مرة أخرى",
+  "statusFailedTitle": "لم ينجح الدفع",
+  "statusFailedBody": "رفضت البوابة العملية ولم يُخصم أي مبلغ. جرّب مرة أخرى أو استخدم بطاقة أخرى.",
+  "statusCancelledTitle": "ألغيت الدفع",
+  "statusCancelledBody": "لم يُخصم أي مبلغ، ومنتجاتك ما زالت في السلة.",
+  "statusExpiredTitle": "انتهت مهلة الدفع",
+  "statusExpiredBody": "انتهت صلاحية صفحة الدفع قبل إتمامها. ارجع إلى السلة وابدأ من جديد.",
+  "statusAbandonedTitle": "لم يكتمل الدفع",
+  "statusAbandonedBody": "أُغلقت صفحة الدفع قبل إتمامها. ارجع إلى السلة وابدأ من جديد.",
+  "tryAgain": "جرّب مرة أخرى",
+  "continueShopping": "تابع التسوق",
+  "statusLabelPending": "بانتظار الدفع",
+  "statusLabelPaid": "مدفوع",
+  "statusLabelFailed": "فشل الدفع",
+  "statusLabelCancelled": "ملغي",
+  "statusLabelExpired": "منتهي",
+  "statusLabelAbandoned": "غير مكتمل",
+  "statusLabelUnknown": "حالة غير معروفة",
+  "myOrdersEmptyTitle": "لا توجد طلبات على هذا الجهاز",
+  "myOrdersEmptyBody": "الطلبات التي تنشئها من هذا التطبيق تظهر هنا مع حالة الدفع.",
+  "orderStatusUnavailable": "تعذّر تحديث الحالة",
+  "orderItemsCount": "{count, plural, =1{منتج واحد} =2{منتجان} few{{count} منتجات} many{{count} منتجًا} other{{count} منتج}}",
+  "@orderItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
