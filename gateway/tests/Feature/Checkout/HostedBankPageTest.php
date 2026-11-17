@@ -127,7 +127,7 @@ test('a second approved attempt on an already paid session is refunded automatic
     expect(Refund::sole())
         ->amount->toBe(12_000)
         ->status->toBe(RefundStatus::Successful)
-        ->and(Payment::find(2)->refunded_amount)->toBe(12_000);
+        ->and(Payment::query()->latest('id')->first()->refunded_amount)->toBe(12_000);
 });
 
 test('the card is saved when the customer asks for it at the bank page flow', function () {
